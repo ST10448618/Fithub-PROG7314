@@ -87,8 +87,8 @@ fun LoginScreen(
                 FitHubTextField(
                     value = state.identifier,
                     onValueChange = viewModel::onIdentifierChange,
-                    label = "USERNAME",
-                    placeholder = "Enter your Username",
+                    label = "Email",
+                    placeholder = "Enter your Email Address",
                     isError = state.errorMessage != null
                 )
 
