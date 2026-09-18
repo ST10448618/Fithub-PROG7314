@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class OffProductResponse(
     val status: Int? = null,
+    val status_verbose: String? = null,
     val code: String? = null,
     val product: OffProduct? = null
 )
@@ -15,6 +16,8 @@ data class OffProduct(
     val code: String? = null,
     @SerialName("product_name") val productName: String? = null,
     @SerialName("product_name_en") val productNameEn: String? = null,
+    @SerialName("product_name_za") val productNameZa: String? = null,
+    @SerialName("generic_name") val genericName: String? = null,
     val brands: String? = null,
     @SerialName("image_url") val imageUrl: String? = null,
     @SerialName("image_front_url") val imageFrontUrl: String? = null,
@@ -28,6 +31,8 @@ data class OffProduct(
 data class OffNutriments(
     @SerialName("energy-kcal_100g") val energyKcal100g: Double? = null,
     @SerialName("energy-kcal_serving") val energyKcalServing: Double? = null,
+    @SerialName("energy-kj_100g") val energyKj100g: Double? = null,
+    @SerialName("energy_100g") val energyLegacy100g: Double? = null,
     @SerialName("proteins_100g") val proteins100g: Double? = null,
     @SerialName("carbohydrates_100g") val carbs100g: Double? = null,
     @SerialName("fat_100g") val fat100g: Double? = null,

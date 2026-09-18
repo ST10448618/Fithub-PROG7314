@@ -58,7 +58,7 @@ object RetrofitProvider {
             .addInterceptor(retryInterceptor)
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BASIC
+                    level = HttpLoggingInterceptor.Level.BODY
                 }
             )
             .build()

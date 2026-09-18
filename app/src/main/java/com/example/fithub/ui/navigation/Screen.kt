@@ -104,8 +104,8 @@ object Screen {
         ADD_MEAL,
         VERIFIED_PLANS,
         PROFILE, EDIT_PROFILE, SETTINGS,
-        ACHIEVEMENTS
-
+        ACHIEVEMENTS,
+        BARCODE_SCANNER
     )
 
     /** Main bottom-nav tab routes only. */

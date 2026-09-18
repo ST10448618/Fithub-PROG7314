@@ -227,9 +227,16 @@ fun FitHubNavGraph(
                 )
             }
 
-
-
-
+            composable(Screen.BARCODE_SCANNER) {
+                com.example.fithub.ui.screens.food.scanner.BarcodeScannerScreen(
+                    onBack = { navController.navigateUp() },
+                    onFoodResolved = { foodId ->
+                        navController.navigate(Screen.foodDetails(foodId)) {
+                            popUpTo(Screen.BARCODE_SCANNER) { inclusive = true }
+                        }
+                    }
+                )
+            }
 
             // Simple food details (used from Add Meal / Food List)
             composable(
