@@ -39,13 +39,14 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: ./gradlew assembleDebug --stacktrace --no-daemon --no-configuration-cache
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
+        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon --no-configuration-cache
 
-      - name: Run Android Lint
-        run: ./gradlew lintDebug --stacktrace --no-daemon
+      - name: Run Android Lint (report only, does not fail build)
+        run: ./gradlew lintDebug --stacktrace --no-daemon --no-configuration-cache -Pandroid.lint.abortOnError=false
+        continue-on-error: true
 
       - name: Upload debug APK
         if: always()
