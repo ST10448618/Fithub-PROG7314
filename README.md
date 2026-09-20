@@ -21,7 +21,7 @@
 ## Demonstration Video
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID">
+  <a href="https://youtu.be/crEY6LEu0r4?si=f2bku2C7cjdg6c8J">
     <img src="https://img.shields.io/badge/YouTube-Watch%20Demo-212C99?style=for-the-badge&logo=youtube&logoColor=white"/>
   </a>
 </p>
