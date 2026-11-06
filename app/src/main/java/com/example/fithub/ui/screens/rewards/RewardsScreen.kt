@@ -20,11 +20,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.fithub.R
 import com.example.fithub.domain.catalog.RewardCatalog
 import com.example.fithub.domain.catalog.RewardOffer
 import com.example.fithub.ui.theme.*
@@ -64,6 +66,7 @@ fun RewardsScreen(
         ) {
             Column {
                 Text(
+                    stringResource(R.string.rewards_title),
                     "Rewards",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
@@ -79,6 +82,7 @@ fun RewardsScreen(
                     if (trophyRes != 0) {
                         AsyncImage(
                             model = trophyRes,
+                            contentDescription = stringResource(R.string.rewards_trophy_desc),
                             contentDescription = "Rewards",
                             modifier = Modifier.size(64.dp)
                         )
@@ -90,6 +94,7 @@ fun RewardsScreen(
 
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
+                            stringResource(R.string.rewards_current_particles),
                             "Current Particles:",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.85f)
@@ -116,12 +121,14 @@ fun RewardsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
+                            stringResource(R.string.rewards_earn_title),
                             "Earn Particles",
                             style = MaterialTheme.typography.titleSmall,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
+                            stringResource(R.string.rewards_earn_body),
                             "while completing achievements by meeting goals!",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.85f)
@@ -129,6 +136,7 @@ fun RewardsScreen(
                     }
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = stringResource(R.string.rewards_open_achievements_desc),
                         contentDescription = "Open achievements",
                         tint = Color.White
                     )
@@ -139,6 +147,7 @@ fun RewardsScreen(
         Spacer(Modifier.height(16.dp))
 
         Text(
+            stringResource(R.string.rewards_on_offer),
             "Rewards on offer",
             style = MaterialTheme.typography.titleLarge,
             color = FitHubPrimary,
@@ -228,6 +237,12 @@ private fun OfferRow(
                 )
                 Text(
                     when (status) {
+                        RewardCatalog.RewardStatus.AVAILABLE ->
+                            stringResource(R.string.rewards_status_available)
+                        RewardCatalog.RewardStatus.CLAIMED ->
+                            stringResource(R.string.rewards_status_claimed)
+                        RewardCatalog.RewardStatus.INSUFFICIENT ->
+                            stringResource(R.string.rewards_status_insufficient)
                         RewardCatalog.RewardStatus.AVAILABLE -> "Available!"
                         RewardCatalog.RewardStatus.CLAIMED -> "Claimed"
                         RewardCatalog.RewardStatus.INSUFFICIENT -> "Insufficient Amount"

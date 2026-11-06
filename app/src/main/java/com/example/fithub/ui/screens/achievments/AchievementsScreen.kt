@@ -15,12 +15,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.fithub.R
 import com.example.fithub.ui.components.AppHeader
 import com.example.fithub.ui.theme.*
 
@@ -37,6 +39,7 @@ fun AchievementsScreen(
             .fillMaxSize()
             .background(BackgroundGray)
     ) {
+        AppHeader(title = stringResource(R.string.achievements_title), onBack = onBack)
         AppHeader(title = "Achievements", onBack = onBack)
 
         Column(
@@ -67,6 +70,7 @@ fun AchievementsScreen(
                     if (trophyRes != 0) {
                         AsyncImage(
                             model = trophyRes,
+                            contentDescription = stringResource(R.string.achievements_trophy_desc),
                             contentDescription = "Trophy",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.size(72.dp)
@@ -78,6 +82,7 @@ fun AchievementsScreen(
                     Spacer(Modifier.height(8.dp))
 
                     Text(
+                        stringResource(R.string.achievements_current_level),
                         "Current Level",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
@@ -91,6 +96,7 @@ fun AchievementsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
+                            stringResource(R.string.achievements_level_format, state.currentLevel),
                             "Level ${state.currentLevel}",
                             style = MaterialTheme.typography.labelMedium,
                             color = Color.White
@@ -104,6 +110,7 @@ fun AchievementsScreen(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
+                            stringResource(R.string.achievements_level_format, state.currentLevel + 1),
                             "Level ${state.currentLevel + 1}",
                             style = MaterialTheme.typography.labelMedium,
                             color = Color.White
@@ -113,6 +120,10 @@ fun AchievementsScreen(
                     Spacer(Modifier.height(8.dp))
 
                     Text(
+                        stringResource(
+                            R.string.achievements_next_level_format,
+                            state.particlesToNextLevel
+                        ),
                         "Receive ${state.particlesToNextLevel} ✨ on next Level Up",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White.copy(alpha = 0.9f)
@@ -123,12 +134,14 @@ fun AchievementsScreen(
             Spacer(Modifier.height(18.dp))
 
             Text(
+                stringResource(R.string.achievements_nutrition_section),
                 "Nutrition Achievements",
                 style = MaterialTheme.typography.titleMedium,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(10.dp))
+            AchievementGrid(cards = state.nutritionAchievements, onClaim = viewModel::claim)
             AchievementGrid(
                 cards = state.nutritionAchievements,
                 onClaim = viewModel::claim
@@ -137,12 +150,14 @@ fun AchievementsScreen(
             Spacer(Modifier.height(18.dp))
 
             Text(
+                stringResource(R.string.achievements_workout_section),
                 "Workout Achievements",
                 style = MaterialTheme.typography.titleMedium,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(10.dp))
+            AchievementGrid(cards = state.workoutAchievements, onClaim = viewModel::claim)
             AchievementGrid(
                 cards = state.workoutAchievements,
                 onClaim = viewModel::claim
@@ -217,6 +232,8 @@ private fun AchievementTile(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(36.dp)
                     )
+                    unlocked -> Text("🎖", style = MaterialTheme.typography.headlineMedium)
+                    else -> Text("🔒", style = MaterialTheme.typography.headlineMedium)
                     unlocked -> Text(
                         "🎖",
                         style = MaterialTheme.typography.headlineMedium
@@ -249,17 +266,32 @@ private fun AchievementTile(
 
             when {
                 claimed -> Text(
+                    stringResource(R.string.achievements_claimed),
                     "Claimed ✓",
                     style = MaterialTheme.typography.labelSmall,
                     color = SuccessGreen,
                     fontWeight = FontWeight.Bold
                 )
                 unlocked -> Text(
+                    stringResource(
+                        R.string.achievements_claim_format,
+                        card.definition.rewardParticles
+                    ),
                     "Claim ✨ ${card.definition.rewardParticles}",
                     style = MaterialTheme.typography.labelSmall,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
+                        .background(FitHubLightBlue, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+                else -> Text(
+                    stringResource(
+                        R.string.achievements_progress_format,
+                        card.userState.progress,
+                        card.definition.goalValue,
+                        card.definition.rewardParticles
+                    ),
                         .background(
                             FitHubLightBlue,
                             RoundedCornerShape(8.dp)

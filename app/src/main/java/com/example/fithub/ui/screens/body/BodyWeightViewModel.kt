@@ -1,3 +1,12 @@
+// AI-assisted (DeepSeek); reviewed and tested by the FitHub team.
+package com.example.fithub.ui.screens.body
+
+import androidx.annotation.StringRes
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fithub.R
+import com.example.fithub.core.ServiceLocator
+import com.example.fithub.core.SessionManager
 package com.example.fithub.ui.screens.body
 
 import androidx.lifecycle.ViewModel
@@ -23,6 +32,13 @@ data class BodyWeightUiState(
     val startingWeightKg: Double? = null,
     val targetWeightKg: Double? = null,
     val goalDirection: GoalDirection = GoalDirection.MAINTAIN,
+    val progressPercent: Int = 0,
+    val deltaFromLastMeasureKg: Double? = null,
+    val journey: List<WeightEntry> = emptyList(),
+    val bmi: Double? = null,
+    @param:StringRes val bmiLabelRes: Int? = null,
+    val nextCheckpointDate: LocalDate? = null,
+    val photoCount: Int = 0,
 
     // Progress
     val progressPercent: Int = 0,
@@ -51,6 +67,9 @@ class BodyWeightViewModel : ViewModel() {
     private val goalRepo = ServiceLocator.goalRepository
     private val checkpointRepo = ServiceLocator.checkpointRepository
 
+    init { observeAll() }
+
+    private fun observeAll() {
     init {
         observeAll()
     }
@@ -62,6 +81,7 @@ class BodyWeightViewModel : ViewModel() {
                 val sortedAsc = list.sortedBy { it.date }
                 val latest = sortedAsc.lastOrNull()
                 val previous = sortedAsc.dropLast(1).lastOrNull()
+                val photoCount = sortedAsc.count { !it.photoUrl.isNullOrBlank() }
 
                 _uiState.update {
                     it.copy(
@@ -71,6 +91,9 @@ class BodyWeightViewModel : ViewModel() {
                         deltaFromLastMeasureKg = if (latest != null && previous != null)
                             latest.weightKg - previous.weightKg
                         else null,
+                        photoCount = photoCount
+                    )
+                }
                         bmi = latest?.let { entry ->
                             val heightCm = _uiState.value.bmi?.let { 0.0 } ?: 0.0
                             // recomputed below once we know height
@@ -83,6 +106,9 @@ class BodyWeightViewModel : ViewModel() {
             }
         }
 
+        viewModelScope.launch {
+            userRepo.observeProfile(uid).collect { profile ->
+                _uiState.update { it.copy(startingWeightKg = profile?.startingWeightKg) }
         // Profile (height + starting weight)
         viewModelScope.launch {
             userRepo.observeProfile(uid).collect { profile ->
@@ -140,6 +166,12 @@ class BodyWeightViewModel : ViewModel() {
             current / ((height / 100.0) * (height / 100.0))
         } else null
 
+        val labelRes: Int? = when {
+            bmi == null -> null
+            bmi < 18.5 -> R.string.bmi_underweight
+            bmi < 25.0 -> R.string.bmi_healthy
+            bmi < 30.0 -> R.string.bmi_overweight
+            else -> R.string.bmi_obese
         val label = when {
             bmi == null -> "—"
             bmi < 18.5 -> "Under weight"
@@ -152,6 +184,7 @@ class BodyWeightViewModel : ViewModel() {
             it.copy(
                 progressPercent = progress,
                 bmi = bmi,
+                bmiLabelRes = labelRes
                 bmiLabel = label
             )
         }

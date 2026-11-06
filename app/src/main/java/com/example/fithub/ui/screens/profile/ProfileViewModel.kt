@@ -1,5 +1,10 @@
 package com.example.fithub.ui.screens.profile
 
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fithub.R
+import com.example.fithub.core.LogTags
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fithub.core.ServiceLocator
@@ -30,6 +35,11 @@ class ProfileViewModel : ViewModel() {
     init {
         val id = SessionManager.currentUserId
         if (id == null) {
+            Log.w(LogTags.AUTH, "ProfileViewModel: no active session")
+            _uiState.value = ProfileUiState(
+                isLoading = false,
+                errorMessage = ServiceLocator.appContext()
+                    .getString(R.string.profile_error_no_session)
             _uiState.value = ProfileUiState(
                 isLoading = false,
                 errorMessage = "No active session. Please log in again."
@@ -50,6 +60,13 @@ class ProfileViewModel : ViewModel() {
 
     private fun trySyncIfEmpty(uid: String) {
         viewModelScope.launch {
+            kotlinx.coroutines.delay(300)
+            if (_uiState.value.profile == null) {
+                val result = userRepo.syncFromRemote(uid)
+                Log.d(LogTags.SYNC, "Profile syncFromRemote result: $result")
+            }
+        }
+    }
             // Give Room a moment for the observation to emit first
             kotlinx.coroutines.delay(300)
             if (_uiState.value.profile == null) {
