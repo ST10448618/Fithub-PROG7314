@@ -20,11 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fithub.R
+import com.example.fithub.core.i18n.LocaleManager
 import com.example.fithub.domain.model.WorkoutCategory
 import com.example.fithub.ui.charts.BarEntry
 import com.example.fithub.ui.charts.DonutChart
@@ -32,7 +36,9 @@ import com.example.fithub.ui.charts.DonutSegment
 import com.example.fithub.ui.charts.SimpleLineChart
 import com.example.fithub.ui.components.*
 import com.example.fithub.ui.theme.*
+import com.example.fithub.ui.util.localized
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun WorkoutsOverviewScreen(
@@ -46,7 +52,7 @@ fun WorkoutsOverviewScreen(
             .fillMaxSize()
             .background(BackgroundGray)
     ) {
-        AppHeader(title = "Workouts Overview", onBack = onBack)
+        AppHeader(title = stringResource(R.string.workouts_overview_title), onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -61,7 +67,6 @@ fun WorkoutsOverviewScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Month selector
             MonthSelector(
                 month = state.selectedMonth,
                 onPrevious = viewModel::onPreviousMonth,
@@ -70,15 +75,17 @@ fun WorkoutsOverviewScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Top tiles
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetricTile(
-                    label = "Total Activity",
-                    value = "${state.totalActivityKcal} kcal",
+                    label = stringResource(R.string.workouts_overview_total_activity),
+                    value = stringResource(
+                        R.string.nutrition_overview_kcal_format,
+                        state.totalActivityKcal
+                    ),
                     modifier = Modifier.weight(1f)
                 )
                 MetricTile(
-                    label = "Active Time",
+                    label = stringResource(R.string.workouts_overview_active_time),
                     value = formatMinutes(state.totalActiveMinutes),
                     modifier = Modifier.weight(1f)
                 )
@@ -86,10 +93,9 @@ fun WorkoutsOverviewScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Monthly Activity Goal
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Monthly Activity Goal",
+                    stringResource(R.string.workouts_overview_monthly_goal),
                     style = MaterialTheme.typography.titleSmall,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold,
@@ -103,14 +109,21 @@ fun WorkoutsOverviewScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "${state.totalActivityKcal} kcal / ${state.monthlyGoalKcal} kcal",
+                        stringResource(
+                            R.string.workouts_overview_goal_progress_format,
+                            state.totalActivityKcal,
+                            state.monthlyGoalKcal
+                        ),
                         style = MaterialTheme.typography.labelMedium,
                         color = FitHubPrimary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        "${state.monthlyProgressPercent}% of target",
+                        stringResource(
+                            R.string.workouts_overview_pct_of_target_format,
+                            state.monthlyProgressPercent
+                        ),
                         style = MaterialTheme.typography.labelMedium,
                         color = TextSecondary
                     )
@@ -124,7 +137,10 @@ fun WorkoutsOverviewScreen(
                 Spacer(Modifier.height(6.dp))
                 val remaining = (state.monthlyGoalKcal - state.totalActivityKcal).coerceAtLeast(0)
                 Text(
-                    "$remaining kcal below monthly goal",
+                    stringResource(
+                        R.string.workouts_overview_remaining_format,
+                        remaining
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary,
                     modifier = Modifier.fillMaxWidth(),
@@ -134,14 +150,13 @@ fun WorkoutsOverviewScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Graph card with mode toggle
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        state.graphTitle,
+                        stringResource(state.graphTitleRes),
                         style = MaterialTheme.typography.titleSmall,
                         color = FitHubPrimary,
                         fontWeight = FontWeight.Bold,
@@ -157,7 +172,7 @@ fun WorkoutsOverviewScreen(
 
                 if (state.graphEntries.isEmpty()) {
                     Text(
-                        "No workout activity to show.",
+                        stringResource(R.string.workouts_overview_no_activity),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary,
                         modifier = Modifier.fillMaxWidth(),
@@ -165,7 +180,7 @@ fun WorkoutsOverviewScreen(
                     )
                 } else {
                     SimpleLineChart(
-                        entries = state.graphEntries.map { BarEntry(it.first, it.second) },
+                        entries = state.graphEntries.map { BarEntry(it.label, it.value) },
                         chartHeight = 160.dp,
                         lineColor = FitHubPrimary,
                         fillColor = FitHubPrimary.copy(alpha = 0.18f)
@@ -174,7 +189,7 @@ fun WorkoutsOverviewScreen(
 
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Values are based on completed sessions • estimates",
+                    stringResource(R.string.workouts_overview_graph_note),
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary,
                     modifier = Modifier.fillMaxWidth(),
@@ -184,10 +199,9 @@ fun WorkoutsOverviewScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Workout Habits
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Your Workout Habits",
+                    stringResource(R.string.workouts_overview_habits_title),
                     style = MaterialTheme.typography.titleSmall,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold,
@@ -197,7 +211,6 @@ fun WorkoutsOverviewScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Donut showing category distribution
                 if (state.categoryBreakdown.isNotEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -208,7 +221,7 @@ fun WorkoutsOverviewScreen(
                                 DonutSegment(
                                     value = item.count.toFloat(),
                                     color = categoryColor(item.category),
-                                    label = categoryLabel(item.category)
+                                    label = item.category.localized()
                                 )
                             },
                             size = 180.dp,
@@ -218,7 +231,6 @@ fun WorkoutsOverviewScreen(
                     Spacer(Modifier.height(16.dp))
                 }
 
-                // Training Summary
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -231,7 +243,7 @@ fun WorkoutsOverviewScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Training Summary",
+                            stringResource(R.string.workouts_overview_training_summary),
                             style = MaterialTheme.typography.labelMedium,
                             color = FitHubPrimary,
                             fontWeight = FontWeight.Bold,
@@ -240,7 +252,10 @@ fun WorkoutsOverviewScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Total Sessions Completed : ${state.habits.totalSessions} Sessions",
+                            stringResource(
+                                R.string.workouts_overview_total_sessions_format,
+                                state.habits.totalSessions
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = FitHubPrimary,
                             textAlign = TextAlign.Center,
@@ -248,7 +263,10 @@ fun WorkoutsOverviewScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Average Session Length : ${state.habits.averageSessionMinutes} minutes",
+                            stringResource(
+                                R.string.workouts_overview_avg_session_format,
+                                state.habits.averageSessionMinutes
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = FitHubPrimary,
                             textAlign = TextAlign.Center,
@@ -256,7 +274,10 @@ fun WorkoutsOverviewScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Longest Session Completed : ${state.habits.longestSessionMinutes} minutes",
+                            stringResource(
+                                R.string.workouts_overview_longest_session_format,
+                                state.habits.longestSessionMinutes
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = FitHubPrimary,
                             textAlign = TextAlign.Center,
@@ -267,10 +288,9 @@ fun WorkoutsOverviewScreen(
 
                 Spacer(Modifier.height(18.dp))
 
-                // Category list
                 if (state.categoryBreakdown.isEmpty()) {
                     Text(
-                        "No categories to display yet.",
+                        stringResource(R.string.workouts_overview_no_categories),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary,
                         modifier = Modifier.fillMaxWidth(),
@@ -299,6 +319,8 @@ private fun MonthSelector(
     onNext: () -> Unit
 ) {
     val canGoNext = month < java.time.YearMonth.now()
+    val locale = Locale.forLanguageTag(LocaleManager.currentCode(LocalContext.current))
+    val monthFormatter = DateTimeFormatter.ofPattern("LLLL yyyy", locale)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -310,12 +332,12 @@ private fun MonthSelector(
         ) {
             Icon(
                 Icons.Filled.KeyboardArrowLeft,
-                contentDescription = "Previous month",
+                contentDescription = stringResource(R.string.progress_overview_prev_desc),
                 tint = FitHubPrimary
             )
         }
         Text(
-            month.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+            month.format(monthFormatter),
             style = MaterialTheme.typography.titleMedium,
             color = FitHubPrimary,
             fontWeight = FontWeight.Bold,
@@ -329,7 +351,7 @@ private fun MonthSelector(
         ) {
             Icon(
                 Icons.Filled.KeyboardArrowRight,
-                contentDescription = "Next month",
+                contentDescription = stringResource(R.string.progress_overview_next_desc),
                 tint = if (canGoNext) FitHubPrimary else SurfaceGray
             )
         }
@@ -379,6 +401,13 @@ private fun GraphModeToggle(
     ) {
         GraphMode.entries.forEach { m ->
             val selected = m == mode
+            val label = stringResource(
+                when (m) {
+                    GraphMode.WEEK -> R.string.workouts_overview_mode_week
+                    GraphMode.MONTH -> R.string.workouts_overview_mode_month
+                    GraphMode.YEAR -> R.string.workouts_overview_mode_year
+                }
+            )
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -387,7 +416,7 @@ private fun GraphModeToggle(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    m.name.lowercase().replaceFirstChar { it.uppercase() },
+                    label,
                     style = MaterialTheme.typography.labelSmall,
                     color = if (selected) TextOnPrimary else TextSecondary,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
@@ -415,30 +444,19 @@ private fun CategoryRow(category: WorkoutCategory, count: Int) {
         )
         Spacer(Modifier.width(10.dp))
         Text(
-            categoryLabel(category),
+            category.localized(),
             style = MaterialTheme.typography.titleSmall,
             color = FitHubPrimary,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
         )
         Text(
-            "$count sessions",
+            stringResource(R.string.workouts_overview_sessions_format, count),
             style = MaterialTheme.typography.labelMedium,
             color = FitHubPrimary,
             fontWeight = FontWeight.Bold
         )
     }
-}
-
-// ---------- helpers ----------
-
-private fun categoryLabel(category: WorkoutCategory): String = when (category) {
-    WorkoutCategory.GENERAL_FITNESS -> "General"
-    WorkoutCategory.CARDIO -> "Cardio"
-    WorkoutCategory.STRENGTH -> "Strength"
-    WorkoutCategory.ENDURANCE -> "Endurance"
-    WorkoutCategory.MOBILITY -> "Mobility"
-    WorkoutCategory.CREATED -> "Created"
 }
 
 private fun categoryColor(category: WorkoutCategory): Color = when (category) {
