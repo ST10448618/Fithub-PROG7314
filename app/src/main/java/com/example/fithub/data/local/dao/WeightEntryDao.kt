@@ -29,4 +29,12 @@ interface WeightEntryDao {
 
     @Query("SELECT * FROM weight_entry WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): WeightEntryEntity?
+
+    /** Phase 6 (UDF 4): update the photo URL after a successful upload. */
+    @Query("UPDATE weight_entry SET photoUrl = :photoUrl WHERE id = :id")
+    suspend fun updatePhotoUrl(id: String, photoUrl: String?)
+
+    /** Phase 6 (UDF 4): rows that have no photo (for the retry-pending sweep). */
+    @Query("SELECT * FROM weight_entry WHERE userId = :userId AND photoUrl IS NULL ORDER BY date ASC")
+    suspend fun getWithoutPhoto(userId: String): List<WeightEntryEntity>
 }
