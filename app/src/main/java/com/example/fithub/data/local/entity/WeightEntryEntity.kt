@@ -16,5 +16,10 @@ data class WeightEntryEntity(
     val weightKg: Double,
     val date: LocalDate,
     val note: String?,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    /**
+     * Firebase Storage download URL for the optional progress photo, or null
+     * if the user didn't attach one. Migration 2→3 adds this column.
+     */
+    val photoUrl: String? = null
 )
