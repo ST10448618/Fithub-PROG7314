@@ -1,3 +1,4 @@
+// AI-assisted (DeepSeek); reviewed and tested by the FitHub team.
 package com.example.fithub.data.local
 
 import android.content.Context

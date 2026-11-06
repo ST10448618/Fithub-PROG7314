@@ -12,8 +12,6 @@ import com.example.fithub.R
  * consumers that display to the user should read those, and any future log or
  * sync should send `title`. This keeps option 1 (full @StringRes migration)
  * available with a single-line change in `RewardsScreen.kt`.
-/**
- * Static definition of rewards users can redeem with Particles.
  */
 data class RewardOffer(
     val id: String,
@@ -23,7 +21,6 @@ data class RewardOffer(
     val brandDrawableName: String,
     @param:StringRes val titleRes: Int,
     @param:StringRes val subtitleRes: Int
-    val brandDrawableName: String
 )
 
 object RewardCatalog {
@@ -37,7 +34,6 @@ object RewardCatalog {
             brandDrawableName = "brand_bun_n_bite",
             titleRes = R.string.reward_bun_n_bite_title,
             subtitleRes = R.string.reward_bun_n_bite_subtitle
-            brandDrawableName = "brand_bun_n_bite"
         ),
         RewardOffer(
             id = "noosh",
@@ -47,7 +43,6 @@ object RewardCatalog {
             brandDrawableName = "brand_noosh",
             titleRes = R.string.reward_noosh_title,
             subtitleRes = R.string.reward_noosh_subtitle
-            brandDrawableName = "brand_noosh"
         ),
         RewardOffer(
             id = "planet_fitness",
@@ -57,7 +52,6 @@ object RewardCatalog {
             brandDrawableName = "brand_planet_fitness",
             titleRes = R.string.reward_planet_fitness_title,
             subtitleRes = R.string.reward_planet_fitness_subtitle
-            brandDrawableName = "brand_planet_fitness"
         ),
         RewardOffer(
             id = "steam",
@@ -67,17 +61,12 @@ object RewardCatalog {
             brandDrawableName = "brand_steam",
             titleRes = R.string.reward_steam_title,
             subtitleRes = R.string.reward_steam_subtitle
-            brandDrawableName = "brand_steam"
         )
     )
 
     /** Reward state for the UI. */
     enum class RewardStatus { AVAILABLE, CLAIMED, INSUFFICIENT }
 
-    /**
-     * For the prototype, "claimed" is tracked locally.
-     * Add a real claim store when the reward flow goes live.
-     */
     fun statusFor(
         offer: RewardOffer,
         currentBalance: Int,

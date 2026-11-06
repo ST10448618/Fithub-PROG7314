@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Fithub"
+rootProject.name = "FitHub"
 include(":app")

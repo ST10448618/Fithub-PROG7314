@@ -23,15 +23,6 @@ data class Achievement(
     val iconName: String = "default",
     @param:StringRes val titleRes: Int = 0,
     @param:StringRes val descriptionRes: Int = 0
- */
-data class Achievement(
-    val id: String,                         // e.g. "first_log"
-    val title: String,                      // "First Log"
-    val description: String,
-    val category: AchievementCategory,
-    val goalValue: Int,                     // e.g. 1 log, 7 days streak
-    val rewardParticles: Int,               // e.g. 150
-    val iconName: String = "default"
 )
 
 /**
@@ -41,7 +32,6 @@ data class UserAchievement(
     val achievementId: String,
     val userId: String,
     val progress: Int = 0,
-    val progress: Int = 0,                  // current value
     val isUnlocked: Boolean = false,
     val isClaimed: Boolean = false,
     val unlockedAt: LocalDateTime? = null,

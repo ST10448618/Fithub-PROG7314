@@ -1,7 +1,11 @@
 package com.example.fithub.data.repository
 
+import com.example.fithub.core.LogTags
 import com.example.fithub.core.Resource
+import com.example.fithub.core.ServiceLocator
 import com.example.fithub.core.await
+import com.example.fithub.core.fireAndForget
+import com.example.fithub.core.notifications.CheckpointReminderWorker
 import com.example.fithub.data.local.dao.CheckpointScheduleDao
 import com.example.fithub.data.local.mapper.CheckpointLocalMapper
 import com.example.fithub.data.remote.FirestorePaths
@@ -24,9 +28,13 @@ class CheckpointRepositoryImpl(
     override suspend fun save(schedule: CheckpointSchedule): Resource<Unit> = try {
         dao.deleteAllForUser(schedule.userId)
         dao.upsert(CheckpointLocalMapper.toEntity(schedule))
+
+        // FIX: Fire and forget so the button doesn't buffer offline
         FirestorePaths.checkpointSchedule(schedule.userId, schedule.id)
             .set(CheckpointMapper.toMap(schedule))
-            .await()
+            .fireAndForget(LogTags.SYNC)
+
+        CheckpointReminderWorker.reschedule(ServiceLocator.appContext(), schedule)
         Resource.Success(Unit)
     } catch (e: Exception) {
         Resource.Error(e.message ?: "Failed to save checkpoint schedule", e)
@@ -38,6 +46,7 @@ class CheckpointRepositoryImpl(
             doc.data?.let { map ->
                 val schedule = CheckpointMapper.fromMap(doc.id, uid, map)
                 dao.upsert(CheckpointLocalMapper.toEntity(schedule))
+                CheckpointReminderWorker.reschedule(ServiceLocator.appContext(), schedule)
             }
         }
         Resource.Success(Unit)

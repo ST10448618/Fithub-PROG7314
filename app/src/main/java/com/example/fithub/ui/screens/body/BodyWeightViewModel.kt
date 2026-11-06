@@ -7,13 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.fithub.R
 import com.example.fithub.core.ServiceLocator
 import com.example.fithub.core.SessionManager
-package com.example.fithub.ui.screens.body
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.fithub.core.ServiceLocator
-import com.example.fithub.core.SessionManager
-import com.example.fithub.domain.calculator.GoalDirectionCalculator
 import com.example.fithub.domain.calculator.WeightProgressCalculator
 import com.example.fithub.domain.model.GoalDirection
 import com.example.fithub.domain.model.WeightEntry
@@ -26,8 +19,6 @@ import java.time.LocalDate
 
 data class BodyWeightUiState(
     val isLoading: Boolean = true,
-
-    // Weight data
     val currentWeightKg: Double? = null,
     val startingWeightKg: Double? = null,
     val targetWeightKg: Double? = null,
@@ -39,19 +30,6 @@ data class BodyWeightUiState(
     @param:StringRes val bmiLabelRes: Int? = null,
     val nextCheckpointDate: LocalDate? = null,
     val photoCount: Int = 0,
-
-    // Progress
-    val progressPercent: Int = 0,
-    val deltaFromLastMeasureKg: Double? = null,
-    val journey: List<WeightEntry> = emptyList(),
-
-    // BMI
-    val bmi: Double? = null,
-    val bmiLabel: String = "—",
-
-    // Checkpoint
-    val nextCheckpointDate: LocalDate? = null,
-
     val errorMessage: String? = null
 )
 
@@ -70,12 +48,6 @@ class BodyWeightViewModel : ViewModel() {
     init { observeAll() }
 
     private fun observeAll() {
-    init {
-        observeAll()
-    }
-
-    private fun observeAll() {
-        // All historical weigh-ins (for the journey chart)
         viewModelScope.launch {
             weightRepo.observeAll(uid).collect { list ->
                 val sortedAsc = list.sortedBy { it.date }
@@ -94,14 +66,6 @@ class BodyWeightViewModel : ViewModel() {
                         photoCount = photoCount
                     )
                 }
-                        bmi = latest?.let { entry ->
-                            val heightCm = _uiState.value.bmi?.let { 0.0 } ?: 0.0
-                            // recomputed below once we know height
-                            null
-                        }
-                    )
-                }
-
                 recomputeDerived()
             }
         }
@@ -109,17 +73,10 @@ class BodyWeightViewModel : ViewModel() {
         viewModelScope.launch {
             userRepo.observeProfile(uid).collect { profile ->
                 _uiState.update { it.copy(startingWeightKg = profile?.startingWeightKg) }
-        // Profile (height + starting weight)
-        viewModelScope.launch {
-            userRepo.observeProfile(uid).collect { profile ->
-                _uiState.update {
-                    it.copy(startingWeightKg = profile?.startingWeightKg)
-                }
                 recomputeDerived(profileHeightCm = profile?.heightCm)
             }
         }
 
-        // Goal
         viewModelScope.launch {
             goalRepo.observeCurrent(uid).collect { goal ->
                 _uiState.update {
@@ -132,7 +89,6 @@ class BodyWeightViewModel : ViewModel() {
             }
         }
 
-        // Checkpoint
         viewModelScope.launch {
             checkpointRepo.observe(uid).collect { schedule ->
                 _uiState.update { it.copy(nextCheckpointDate = schedule?.nextCheckpointDate) }
@@ -150,7 +106,6 @@ class BodyWeightViewModel : ViewModel() {
         val starting = s.startingWeightKg ?: s.journey.firstOrNull()?.weightKg
         val target = s.targetWeightKg
 
-        // Progress %
         val progress = if (current != null && starting != null && target != null) {
             WeightProgressCalculator.calculate(
                 startingWeightKg = starting,
@@ -160,7 +115,6 @@ class BodyWeightViewModel : ViewModel() {
             ).clampedPercent
         } else 0
 
-        // BMI
         val height = profileHeight
         val bmi = if (current != null && height != null && height > 0) {
             current / ((height / 100.0) * (height / 100.0))
@@ -172,12 +126,6 @@ class BodyWeightViewModel : ViewModel() {
             bmi < 25.0 -> R.string.bmi_healthy
             bmi < 30.0 -> R.string.bmi_overweight
             else -> R.string.bmi_obese
-        val label = when {
-            bmi == null -> "—"
-            bmi < 18.5 -> "Under weight"
-            bmi < 25.0 -> "Healthy"
-            bmi < 30.0 -> "Overweight"
-            else -> "Obese"
         }
 
         _uiState.update {
@@ -185,7 +133,6 @@ class BodyWeightViewModel : ViewModel() {
                 progressPercent = progress,
                 bmi = bmi,
                 bmiLabelRes = labelRes
-                bmiLabel = label
             )
         }
     }

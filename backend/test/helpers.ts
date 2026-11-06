@@ -1,3 +1,4 @@
+// AI-assisted (DeepSeek); reviewed and tested by the FitHub team.
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
