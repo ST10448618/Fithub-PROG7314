@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,9 @@ import com.example.fithub.R
 import com.example.fithub.ui.components.*
 import com.example.fithub.ui.theme.*
 
+
+import com.example.fithub.ui.components.*
+import com.example.fithub.ui.theme.*
 
 @Composable
 fun CheckpointLoggerScreen(
@@ -59,6 +65,7 @@ fun CheckpointLoggerScreen(
             .background(BackgroundGray)
     ) {
         AppHeader(title = stringResource(R.string.checkpoint_logger_title), onBack = onBack)
+        AppHeader(title = "New Weigh In", onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -73,6 +80,7 @@ fun CheckpointLoggerScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
+            // Hero banner
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -87,12 +95,14 @@ fun CheckpointLoggerScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "\u25CE", // ◉
+                        "◎",
                         style = MaterialTheme.typography.headlineLarge,
                         color = Color.White
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.checkpoint_logger_hero_title),
+                        "Consistency brings results",
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -101,6 +111,7 @@ fun CheckpointLoggerScreen(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         stringResource(R.string.checkpoint_logger_hero_body),
+                        "Every weigh in is a part of your fitness journey",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.9f),
                         textAlign = TextAlign.Center
@@ -112,6 +123,7 @@ fun CheckpointLoggerScreen(
 
             Text(
                 stringResource(R.string.checkpoint_logger_current_weight),
+                "Current Weight",
                 style = MaterialTheme.typography.titleSmall,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold
@@ -211,6 +223,12 @@ fun CheckpointLoggerScreen(
 
             Spacer(Modifier.height(16.dp))
 
+                unit = state.unit
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Progress banner
             viewModel.progressMessage()?.let { message ->
                 Box(
                     modifier = Modifier
@@ -221,6 +239,7 @@ fun CheckpointLoggerScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "\u24D8", // ⓘ
+                            "ⓘ",
                             style = MaterialTheme.typography.titleLarge,
                             color = FitHubPrimary
                         )
@@ -228,6 +247,7 @@ fun CheckpointLoggerScreen(
                         Column {
                             Text(
                                 stringResource(R.string.checkpoint_logger_progress_detected),
+                                "PROGRESS DETECTED!",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = FitHubPrimary,
                                 fontWeight = FontWeight.Bold
@@ -245,6 +265,9 @@ fun CheckpointLoggerScreen(
             state.errorMessage?.let { err ->
                 Spacer(Modifier.height(12.dp))
                 Text(err, color = ErrorRed)
+            if (state.errorMessage != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(state.errorMessage!!, color = ErrorRed)
             }
 
             Spacer(Modifier.height(28.dp))
@@ -252,6 +275,7 @@ fun CheckpointLoggerScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SecondaryButton(
                     text = stringResource(R.string.generic_cancel),
+                    text = "Cancel",
                     onClick = onBack,
                     modifier = Modifier.weight(1f)
                 )
@@ -260,6 +284,7 @@ fun CheckpointLoggerScreen(
                         if (state.isSaving) R.string.checkpoint_logger_logging
                         else R.string.checkpoint_logger_log_button
                     ),
+                    text = if (state.isSaving) "Logging..." else "Log Weight",
                     onClick = viewModel::save,
                     enabled = !state.isSaving,
                     modifier = Modifier.weight(1f)

@@ -30,6 +30,13 @@ import com.example.fithub.domain.model.Gender
 import com.example.fithub.ui.components.*
 import com.example.fithub.ui.theme.*
 import com.example.fithub.ui.util.localized
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fithub.ui.components.*
+import com.example.fithub.ui.theme.*
+import androidx.compose.ui.text.input.KeyboardType
 
 @Composable
 fun EditProfileScreen(
@@ -49,6 +56,7 @@ fun EditProfileScreen(
             .background(BackgroundGray)
     ) {
         AppHeader(title = stringResource(R.string.edit_profile_title), onBack = onBack)
+        AppHeader(title = "Edit Profile", onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -86,6 +94,7 @@ fun EditProfileScreen(
 
             Text(
                 stringResource(R.string.edit_profile_account_details),
+                "Account Details",
                 style = MaterialTheme.typography.titleMedium,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold
@@ -96,12 +105,14 @@ fun EditProfileScreen(
                 value = state.username,
                 onValueChange = viewModel::onUsernameChange,
                 label = stringResource(R.string.edit_profile_username)
+                label = "Username"
             )
             Spacer(Modifier.height(12.dp))
             FitHubTextField(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
                 label = stringResource(R.string.edit_profile_email),
+                label = "Email Address",
                 keyboardType = KeyboardType.Email
             )
 
@@ -109,6 +120,7 @@ fun EditProfileScreen(
 
             Text(
                 stringResource(R.string.edit_profile_physical_details),
+                "Physical Details",
                 style = MaterialTheme.typography.titleMedium,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold
@@ -119,6 +131,7 @@ fun EditProfileScreen(
                 value = state.heightCm,
                 onValueChange = viewModel::onHeightChange,
                 label = stringResource(R.string.edit_profile_height),
+                label = "Height",
                 keyboardType = KeyboardType.Number
             )
             Spacer(Modifier.height(12.dp))
@@ -126,6 +139,7 @@ fun EditProfileScreen(
                 value = state.age,
                 onValueChange = viewModel::onAgeChange,
                 label = stringResource(R.string.edit_profile_age),
+                label = "Age",
                 keyboardType = KeyboardType.Number
             )
 
@@ -140,6 +154,17 @@ fun EditProfileScreen(
                 onSelect = { selected ->
                     val idx = genderLabels.indexOf(selected)
                     if (idx >= 0) viewModel.onGenderChange(genderEntries[idx])
+            DropdownField(
+                label = "Gender",
+                current = state.gender.name.lowercase().replaceFirstChar { it.uppercase() },
+                options = listOf("Male", "Female", "Other"),
+                onSelect = { selected ->
+                    val gender = when (selected) {
+                        "Male" -> com.example.fithub.domain.model.Gender.MALE
+                        "Female" -> com.example.fithub.domain.model.Gender.FEMALE
+                        else -> com.example.fithub.domain.model.Gender.OTHER
+                    }
+                    viewModel.onGenderChange(gender)
                 }
             )
 
@@ -161,6 +186,21 @@ fun EditProfileScreen(
                 Spacer(Modifier.height(12.dp))
                 Text(
                     err,
+            DropdownField(
+                label = "Lifestyle",
+                current = state.activityLevel.label,
+                options = com.example.fithub.domain.model.ActivityLevel.entries.map { it.label },
+                onSelect = { selected ->
+                    val level = com.example.fithub.domain.model.ActivityLevel.entries
+                        .firstOrNull { it.label == selected } ?: state.activityLevel
+                    viewModel.onActivityChange(level)
+                }
+            )
+
+            if (state.errorMessage != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    state.errorMessage!!,
                     style = MaterialTheme.typography.labelSmall,
                     color = ErrorRed
                 )
@@ -171,6 +211,7 @@ fun EditProfileScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SecondaryButton(
                     text = stringResource(R.string.generic_cancel),
+                    text = "Cancel",
                     onClick = onBack,
                     modifier = Modifier.weight(1f)
                 )
@@ -179,6 +220,7 @@ fun EditProfileScreen(
                         if (state.isSaving) R.string.edit_profile_saving
                         else R.string.edit_profile_save
                     ),
+                    text = if (state.isSaving) "Saving..." else "Save Changes",
                     onClick = viewModel::save,
                     enabled = !state.isSaving,
                     modifier = Modifier.weight(1f)

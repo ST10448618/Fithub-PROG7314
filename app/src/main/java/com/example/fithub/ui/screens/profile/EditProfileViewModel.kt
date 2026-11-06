@@ -49,6 +49,15 @@ class EditProfileViewModel : ViewModel() {
         } else {
             viewModelScope.launch {
                 userRepo.observeProfile(id).collect { profile ->
+    init {
+        val uid = SessionManager.currentUserId
+        if (uid == null) {
+            _uiState.update {
+                it.copy(isLoading = false, errorMessage = "No active session. Please log in again.")
+            }
+        } else {
+            viewModelScope.launch {
+                userRepo.observeProfile(uid).collect { profile ->
                     if (profile != null) {
                         _uiState.update {
                             it.copy(
@@ -67,6 +76,7 @@ class EditProfileViewModel : ViewModel() {
                                 isLoading = false,
                                 errorMessage = ServiceLocator.appContext()
                                     .getString(R.string.edit_profile_error_not_found)
+                                errorMessage = "Profile not found. Please complete onboarding."
                             )
                         }
                     }
@@ -88,6 +98,11 @@ class EditProfileViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(isSaving = true, errorMessage = null, savedSuccessfully = false)
+                it.copy(
+                    isSaving = true,
+                    errorMessage = null,
+                    savedSuccessfully = false
+                )
             }
 
             val userId = uid
@@ -97,18 +112,21 @@ class EditProfileViewModel : ViewModel() {
                         isSaving = false,
                         errorMessage = ServiceLocator.appContext()
                             .getString(R.string.profile_error_no_session)
+                        errorMessage = "No active session. Please log in again."
                     )
                 }
                 return@launch
             }
 
             val existing = userRepo.getProfile(userId)
+
             if (existing == null) {
                 _uiState.update {
                     it.copy(
                         isSaving = false,
                         errorMessage = ServiceLocator.appContext()
                             .getString(R.string.edit_profile_error_not_found)
+                        errorMessage = "Profile not found."
                     )
                 }
                 return@launch
@@ -134,4 +152,28 @@ class EditProfileViewModel : ViewModel() {
             }
         }
     }
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            savedSuccessfully = true
+                        )
+                    }
+                }
+
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            errorMessage = result.message
+                        )
+                    }
+                }
+
+                Resource.Loading -> {
+                    // Nothing to do
+                }
+            }
+        }
+    }
+
 }

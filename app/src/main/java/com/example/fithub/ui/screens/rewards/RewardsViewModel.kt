@@ -7,12 +7,17 @@ import com.example.fithub.core.ServiceLocator
 import com.example.fithub.core.SessionManager
 import com.example.fithub.domain.catalog.RewardCatalog
 import com.example.fithub.domain.catalog.RewardOffer
+import com.example.fithub.core.ServiceLocator
+import com.example.fithub.core.SessionManager
+import com.example.fithub.domain.catalog.RewardCatalog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.fithub.domain.catalog.RewardOffer
+
 
 data class RewardsUiState(
     val isLoading: Boolean = true,
@@ -71,6 +76,7 @@ class RewardsViewModel : ViewModel() {
                     _uiState.update {
                         it.copy(toastMessage = ctx.getString(R.string.rewards_toast_already_claimed))
                     }
+                    _uiState.update { it.copy(toastMessage = "Already claimed.") }
                     return@launch
                 }
                 RewardCatalog.RewardStatus.INSUFFICIENT -> {
@@ -81,6 +87,7 @@ class RewardsViewModel : ViewModel() {
                                 offer.costParticles
                             )
                         )
+                        it.copy(toastMessage = "Need ${offer.costParticles} ✨ to claim.")
                     }
                     return@launch
                 }
@@ -96,6 +103,7 @@ class RewardsViewModel : ViewModel() {
                         offer.title
                     )
                 )
+                it.copy(toastMessage = "${offer.title} claimed!")
             }
         }
     }

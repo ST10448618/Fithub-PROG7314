@@ -31,6 +31,7 @@ import com.example.fithub.domain.catalog.RewardCatalog
 import com.example.fithub.domain.catalog.RewardOffer
 import com.example.fithub.ui.theme.*
 
+
 @Composable
 fun RewardsScreen(
     onOpenAchievements: () -> Unit,
@@ -66,6 +67,7 @@ fun RewardsScreen(
             Column {
                 Text(
                     stringResource(R.string.rewards_title),
+                    "Rewards",
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -81,6 +83,7 @@ fun RewardsScreen(
                         AsyncImage(
                             model = trophyRes,
                             contentDescription = stringResource(R.string.rewards_trophy_desc),
+                            contentDescription = "Rewards",
                             modifier = Modifier.size(64.dp)
                         )
                     } else {
@@ -92,6 +95,7 @@ fun RewardsScreen(
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
                             stringResource(R.string.rewards_current_particles),
+                            "Current Particles:",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.85f)
                         )
@@ -118,12 +122,14 @@ fun RewardsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             stringResource(R.string.rewards_earn_title),
+                            "Earn Particles",
                             style = MaterialTheme.typography.titleSmall,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             stringResource(R.string.rewards_earn_body),
+                            "while completing achievements by meeting goals!",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.85f)
                         )
@@ -131,6 +137,7 @@ fun RewardsScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = stringResource(R.string.rewards_open_achievements_desc),
+                        contentDescription = "Open achievements",
                         tint = Color.White
                     )
                 }
@@ -141,6 +148,7 @@ fun RewardsScreen(
 
         Text(
             stringResource(R.string.rewards_on_offer),
+            "Rewards on offer",
             style = MaterialTheme.typography.titleLarge,
             color = FitHubPrimary,
             fontWeight = FontWeight.Bold,
@@ -235,6 +243,9 @@ private fun OfferRow(
                             stringResource(R.string.rewards_status_claimed)
                         RewardCatalog.RewardStatus.INSUFFICIENT ->
                             stringResource(R.string.rewards_status_insufficient)
+                        RewardCatalog.RewardStatus.AVAILABLE -> "Available!"
+                        RewardCatalog.RewardStatus.CLAIMED -> "Claimed"
+                        RewardCatalog.RewardStatus.INSUFFICIENT -> "Insufficient Amount"
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = when (status) {

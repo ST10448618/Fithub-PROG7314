@@ -14,6 +14,15 @@ import com.example.fithub.domain.model.WeightEntry
 import com.example.fithub.util.IdGenerator
 import com.example.fithub.util.ImageCompressor
 import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fithub.core.Resource
+import com.example.fithub.core.ServiceLocator
+import com.example.fithub.core.SessionManager
+import com.example.fithub.domain.calculator.GoalDirectionCalculator
+import com.example.fithub.domain.model.GoalDirection
+import com.example.fithub.domain.model.WeightEntry
+import com.example.fithub.util.IdGenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +38,9 @@ data class CheckpointLoggerUiState(
     val isLoading: Boolean = true,
     val weight: Int = 70,
 
+    val unit: String = "kg",
+
+    // Progress context
     val previousWeightKg: Double? = null,
     val targetWeightKg: Double? = null,
     val goalDirection: GoalDirection = GoalDirection.MAINTAIN,
@@ -58,11 +70,18 @@ class CheckpointLoggerViewModel : ViewModel() {
     val uiState: StateFlow<CheckpointLoggerUiState> = _uiState.asStateFlow()
 
     init { load() }
+    private val weightRepo = ServiceLocator.weightRepository
+    private val goalRepo = ServiceLocator.goalRepository
+
+    init {
+        load()
+    }
 
     private fun load() {
         viewModelScope.launch {
             val latest = weightRepo.getLatest(uid)
             val goal = goalRepo.getCurrent(uid)
+
             val initial = latest?.weightKg?.toInt() ?: 70
             _uiState.update {
                 it.copy(
@@ -94,6 +113,9 @@ class CheckpointLoggerViewModel : ViewModel() {
         val now = LocalDateTime.now()
         val entryId = IdGenerator.newId()
         val pendingUri = state.pendingPhotoUri
+    fun save() {
+        val state = _uiState.value
+        val now = LocalDateTime.now()
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
@@ -127,6 +149,12 @@ class CheckpointLoggerViewModel : ViewModel() {
                 date = LocalDate.now(),
                 createdAt = now,
                 photoUrl = localPhotoPath
+            val entry = WeightEntry(
+                id = IdGenerator.newId(),
+                userId = uid,
+                weightKg = state.weight.toDouble(),
+                date = LocalDate.now(),
+                createdAt = now
             )
 
             when (val result = weightRepo.addEntry(entry)) {
@@ -161,6 +189,7 @@ class CheckpointLoggerViewModel : ViewModel() {
     }
 
     /** Progress banner text — resource-backed since Phase 5 Batch D2. */
+    /** Progress text for the banner below the stepper. */
     fun progressMessage(): String? {
         val s = _uiState.value
         val previous = s.previousWeightKg ?: return null
@@ -172,6 +201,9 @@ class CheckpointLoggerViewModel : ViewModel() {
         if (kotlin.math.abs(deltaFromPrevious) < 0.1) {
             return ctx.getString(R.string.checkpoint_logger_maintained)
         }
+
+        val deltaFromPrevious = current - previous
+        if (kotlin.math.abs(deltaFromPrevious) < 0.1) return "You maintained your weight."
 
         val towardGoal = when (s.goalDirection) {
             GoalDirection.LOSE -> current < previous
@@ -187,6 +219,11 @@ class CheckpointLoggerViewModel : ViewModel() {
                 ctx.getString(R.string.checkpoint_logger_closer_to_goal_format, delta)
             towardGoal -> ctx.getString(R.string.checkpoint_logger_on_track)
             else -> ctx.getString(R.string.checkpoint_logger_away_from_goal_format, delta)
+                "You are now ${delta} kg closer to your goal!"
+            towardGoal && s.goalDirection == GoalDirection.GAIN ->
+                "You are now ${delta} kg closer to your goal!"
+            towardGoal -> "On track — nice."
+            else -> "You've moved ${delta} kg away from your goal."
         }
     }
 }

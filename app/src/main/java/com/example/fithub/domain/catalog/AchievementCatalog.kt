@@ -38,6 +38,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_first_log_title,
             descriptionRes = R.string.achievement_first_log_desc
+            iconName = "medal"
         ),
         Achievement(
             id = HIT_GOAL,
@@ -49,6 +50,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_hit_goal_title,
             descriptionRes = R.string.achievement_hit_goal_desc
+            iconName = "medal"
         ),
         Achievement(
             id = PERFECT_WEEK,
@@ -60,6 +62,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_perfect_week_title,
             descriptionRes = R.string.achievement_perfect_week_desc
+            iconName = "medal"
         ),
         Achievement(
             id = MONTHLY_STREAK,
@@ -71,6 +74,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_monthly_streak_title,
             descriptionRes = R.string.achievement_monthly_streak_desc
+            iconName = "medal"
         ),
 
         // ---- Workout ----
@@ -84,6 +88,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_first_session_title,
             descriptionRes = R.string.achievement_first_session_desc
+            iconName = "medal"
         ),
         Achievement(
             id = WEEKLY_GOAL,
@@ -95,6 +100,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_weekly_goal_title,
             descriptionRes = R.string.achievement_weekly_goal_desc
+            iconName = "medal"
         ),
         Achievement(
             id = WORKOUT_STREAK,
@@ -106,6 +112,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_workout_streak_title,
             descriptionRes = R.string.achievement_workout_streak_desc
+            iconName = "medal"
         ),
         Achievement(
             id = MONTHLY_MILESTONE,
@@ -141,6 +148,7 @@ object AchievementCatalog {
             iconName = "medal",
             titleRes = R.string.achievement_streak_30_title,
             descriptionRes = R.string.achievement_streak_30_desc
+            iconName = "medal"
         )
     )
 
@@ -148,6 +156,8 @@ object AchievementCatalog {
     fun byCategory(category: AchievementCategory): List<Achievement> =
         ALL.filter { it.category == category }
 
+    // ---- Level formula ----
+    // Every 300 lifetime particles = 1 level. Starting at Level 1.
     const val PARTICLES_PER_LEVEL = 300
 
     fun levelFromLifetimeParticles(lifetimeEarned: Int): Int =

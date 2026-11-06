@@ -16,6 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +42,7 @@ import com.example.fithub.ui.components.SecondaryButton
 import com.example.fithub.ui.theme.*
 import com.example.fithub.ui.util.localized
 import kotlinx.coroutines.launch
+import com.example.fithub.ui.theme.*
 
 @Composable
 fun ProfileScreen(
@@ -49,6 +55,9 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    viewModel: ProfileViewModel = viewModel()
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -56,6 +65,7 @@ fun ProfileScreen(
             .background(BackgroundGray)
     ) {
         AppHeader(title = stringResource(R.string.profile_title), onBack = onBack)
+        AppHeader(title = "Profile", onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -86,6 +96,10 @@ fun ProfileScreen(
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
@@ -94,6 +108,9 @@ fun ProfileScreen(
                         .clip(CircleShape)
                         .background(
                             Brush.verticalGradient(listOf(FitHubMidBlue, FitHubPrimary))
+                            Brush.verticalGradient(
+                                listOf(FitHubMidBlue, FitHubPrimary)
+                            )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -111,18 +128,28 @@ fun ProfileScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.profile_your_details),
+            // Details card
+            RoundedCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    "Your Details",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(FitHubPrimary, RoundedCornerShape(10.dp))
+                        .background(
+                            FitHubPrimary,
+                            RoundedCornerShape(10.dp)
+                        )
                         .padding(12.dp)
                 )
                 Spacer(Modifier.height(12.dp))
 
                 DetailRow(stringResource(R.string.profile_label_username), state.profile?.firstName ?: stringResource(R.string.common_dash))
                 DetailRow(stringResource(R.string.profile_label_email), state.profile?.email ?: stringResource(R.string.common_dash))
+                DetailRow("Username :", state.profile?.firstName ?: "—")
+                DetailRow("Email Address :", state.profile?.email ?: "—")
 
                 Spacer(Modifier.height(8.dp))
 
@@ -137,6 +164,13 @@ fun ProfileScreen(
                         value = state.profile?.heightCm?.let {
                             stringResource(R.string.nutrition_goals_cm_format, it.toInt())
                         } ?: stringResource(R.string.common_dash),
+                        label = "Age :",
+                        value = state.profile?.age?.toString() ?: "—",
+                        modifier = Modifier.weight(1f)
+                    )
+                    DetailColumn(
+                        label = "Height :",
+                        value = state.profile?.heightCm?.let { "${it.toInt()} cm" } ?: "—",
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -150,6 +184,14 @@ fun ProfileScreen(
                     DetailColumn(
                         label = stringResource(R.string.profile_label_lifestyle),
                         value = state.profile?.activityLevel?.localized() ?: stringResource(R.string.common_dash),
+                        label = "Gender :",
+                        value = state.profile?.gender?.name?.lowercase()
+                            ?.replaceFirstChar { it.uppercase() } ?: "—",
+                        modifier = Modifier.weight(1f)
+                    )
+                    DetailColumn(
+                        label = "Lifestyle :",
+                        value = state.profile?.activityLevel?.label ?: "—",
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -209,6 +251,18 @@ fun ProfileScreen(
                 }
             }
         )
+    }
+            PrimaryButton(text = "Edit Details", onClick = onEditClick)
+
+            Spacer(Modifier.height(12.dp))
+
+            com.example.fithub.ui.components.SecondaryButton(
+                text = "Settings",
+                onClick = onSettingsClick
+            )
+
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
 
