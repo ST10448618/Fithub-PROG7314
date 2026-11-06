@@ -33,63 +33,14 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-
-    var showRationale by remember { mutableStateOf(false) }
-
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        scope.launch { ServiceLocator.preferencesManager.setNotificationRationaleShown(true) }
-        if (granted) {
-            scope.launch {
-                ServiceLocator.preferencesManager.setPushNotifications(true)
-                FirebaseMessaging.getInstance().subscribeToTopic("fithub_all")
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val shown = ServiceLocator.preferencesManager.notificationRationaleShown.first()
-        if (!shown && !NotificationPermissionHelper.isGranted(context)) {
-            showRationale = true
-        }
-    }
-
-    if (showRationale) {
-        AlertDialog(
-            onDismissRequest = {
-                showRationale = false
-                scope.launch { ServiceLocator.preferencesManager.setNotificationRationaleShown(true) }
-            },
-            title = { Text(stringResource(R.string.notif_rationale_title)) },
-            text = { Text(stringResource(R.string.notif_rationale_body)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showRationale = false
-                    if (Build.VERSION.SDK_INT >= 33) {
-                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    } else {
-                        scope.launch {
-                            ServiceLocator.preferencesManager.setNotificationRationaleShown(true)
-                            ServiceLocator.preferencesManager.setPushNotifications(true)
-                            FirebaseMessaging.getInstance().subscribeToTopic("fithub_all")
-                        }
-                    }
-                }) { Text(stringResource(R.string.notif_rationale_accept)) }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showRationale = false
-                    scope.launch { ServiceLocator.preferencesManager.setNotificationRationaleShown(true) }
-                }) { Text(stringResource(R.string.notif_rationale_decline)) }
-            }
-        )
-    }
 
     if (state.isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
         return
     }
+
     if (state.errorMessage != null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(state.errorMessage ?: "", color = TextSecondary)
@@ -110,30 +61,6 @@ fun DashboardScreen(
         )
 
         Spacer(Modifier.height(16.dp))
-
-        // Phase 6 (UDF 5): streaks + weekly challenge
-        StreakCard(
-            currentStreak = state.currentStreak,
-            longestStreak = state.longestStreak,
-            todayDone = state.todayDone,
-            atRisk = state.streakAtRisk
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        WeeklyChallengeCard(
-            completed = state.challengeCompleted,
-            target = state.challengeTarget
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        WeeklyInsightsCard(
-            insights = state.insights,
-            isLoading = state.insightsLoading
-        )
-
-        Spacer(Modifier.height(20.dp))
 
         TodaysOverviewSection(
             snapshot = state.nutritionSnapshot,

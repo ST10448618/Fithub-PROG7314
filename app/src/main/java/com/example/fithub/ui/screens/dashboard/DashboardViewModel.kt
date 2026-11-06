@@ -1,24 +1,14 @@
 package com.example.fithub.ui.screens.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fithub.R
-import com.example.fithub.core.LogTags
 import com.example.fithub.core.ServiceLocator
 import com.example.fithub.core.SessionManager
-import com.example.fithub.core.notifications.NotificationHelper
 import com.example.fithub.domain.calculator.NutritionProgressCalculator
-import com.example.fithub.domain.calculator.StreakCalculator
-import com.example.fithub.domain.calculator.WeeklyChallengeCalculator
 import com.example.fithub.domain.calculator.WorkoutProgressCalculator
-import com.example.fithub.domain.catalog.AchievementCatalog
-import com.example.fithub.domain.model.UserAchievement
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -38,8 +28,6 @@ class DashboardViewModel : ViewModel() {
     private val foodLogRepo = ServiceLocator.foodLogRepository
     private val sessionRepo = ServiceLocator.workoutSessionRepository
     private val planRepo = ServiceLocator.workoutPlanRepository
-    private val rewardRepo = ServiceLocator.rewardRepository
-    private val prefs = ServiceLocator.preferencesManager
 
     init {
         observeProfile()
@@ -48,9 +36,8 @@ class DashboardViewModel : ViewModel() {
         observeWorkouts()
         loadRecommendations()
         observeWeeklyCalories()
-        observeStreakAndChallenge()
-        loadWeeklyInsights()
     }
+
 
     private fun observeWeeklyCalories() {
         val today = LocalDate.now()
@@ -60,15 +47,19 @@ class DashboardViewModel : ViewModel() {
             foodLogRepo.observeRecent(uid, limit = 200).collect { logs ->
                 val goals = nutritionGoalsRepo.getCurrent(uid)
                 val target = goals?.userDailyCalories ?: 0
+
                 val byDay = logs
                     .filter { it.logDate in start..today }
                     .groupBy { it.logDate }
                     .mapValues { (_, dayLogs) -> dayLogs.sumOf { it.calories }.toInt() }
+
                 val bars = (0..6).map { offset ->
                     val date = start.plusDays(offset.toLong())
                     val cals = byDay[date] ?: 0
                     DailyCalorieBar(
                         date = date,
+                        dayLabel = date.dayOfWeek.name.take(3)
+                            .lowercase().replaceFirstChar { it.uppercase() },
                         calories = cals,
                         isOverTarget = target > 0 && cals > target
                     )
@@ -104,12 +95,13 @@ class DashboardViewModel : ViewModel() {
     private fun observeNutrition() {
         val today = LocalDate.now()
         viewModelScope.launch {
+            // Ensure NutritionGoals exist — create default if missing
             var goals = nutritionGoalsRepo.getCurrent(uid)
             if (goals == null) {
                 val profile = userRepo.getProfile(uid)
                 val goal = goalRepo.getCurrent(uid)
-                val direction = goal?.direction
-                    ?: com.example.fithub.domain.model.GoalDirection.MAINTAIN
+                val direction = goal?.direction ?: com.example.fithub.domain.model.GoalDirection.MAINTAIN
+
                 val recommended = if (profile != null) {
                     com.example.fithub.domain.calculator.CalorieEngine.calculate(
                         com.example.fithub.domain.calculator.CalorieEngine.Input(
@@ -122,6 +114,7 @@ class DashboardViewModel : ViewModel() {
                         )
                     ).recommendedDailyCalories
                 } else 2000
+
                 goals = com.example.fithub.domain.model.NutritionGoals(
                     id = com.example.fithub.util.IdGenerator.newId(),
                     userId = uid,
@@ -134,7 +127,9 @@ class DashboardViewModel : ViewModel() {
                 )
                 nutritionGoalsRepo.save(goals)
             }
+
             val finalGoals = goals!!
+
             foodLogRepo.observeByDate(uid, today).collect { logs ->
                 val snapshot = NutritionProgressCalculator.dashboardSnapshot(
                     todayLogs = logs,
@@ -169,112 +164,14 @@ class DashboardViewModel : ViewModel() {
 
     private fun loadRecommendations() {
         viewModelScope.launch {
-            planRepo.observeVerified().collect { plans ->
-                _uiState.update { it.copy(recommendedPlans = plans.take(4)) }
-            }
-        }
-    }
-
-    /**
-     * Phase 6 (UDF 5): combines food-log dates + completed-session dates, feeds
-     * both the streak and the weekly challenge calculators, and — the first
-     * time a milestone (3/7/14/30) is observed — fires a notification and
-     * awards particles + the matching achievement.
-     */
-    private fun observeStreakAndChallenge() {
-        viewModelScope.launch {
-            combine(
-                foodLogRepo.observeRecent(uid, limit = 200),
-                sessionRepo.observeCompleted(uid)
-            ) { logs, sessions ->
-                val foodDates = logs.map { it.logDate }
-                val sessionDates = sessions.map { it.logDate }
-                (foodDates + sessionDates).toSet() to sessions.map { it.logDate }
-            }.collect { (allDates, sessionDates) ->
-                val today = LocalDate.now()
-                val streak = StreakCalculator.calculate(allDates, today)
-                val challengeTarget = workoutGoalsRepo.get(uid)?.sessionsPerWeek ?: 4
-                val challenge = WeeklyChallengeCalculator.calculate(
-                    completedDates = sessionDates,
-                    today = today,
-                    targetSessionsPerWeek = challengeTarget
-                )
-                _uiState.update {
-                    it.copy(
-                        currentStreak = streak.current,
-                        longestStreak = streak.longest,
-                        todayDone = streak.todayDone,
-                        streakAtRisk = streak.atRisk,
-                        challengeCompleted = challenge.completed,
-                        challengeTarget = challenge.target
-                    )
+            // TODO(Track B): real recommendations based on goal/history
+            val verified = mutableListOf<com.example.fithub.domain.model.WorkoutPlan>()
+            // Fallback: pull from repo (first few verified plans)
+            ServiceLocator.workoutPlanRepository
+                .observeVerified()
+                .collect { plans ->
+                    _uiState.update { it.copy(recommendedPlans = plans.take(4)) }
                 }
-                checkStreakMilestones(streak.current, streak.longest)
-            }
-        }
-    }
-
-    private suspend fun checkStreakMilestones(current: Int, longest: Int) {
-        val alreadyHit = prefs.streakMilestonesHit.first()
-        val milestones = listOf(3, 7, 14, 30)
-        for (m in milestones) {
-            val reachedNow = current >= m || longest >= m
-            if (reachedNow && m.toString() !in alreadyHit) {
-                awardMilestone(m)
-            }
-        }
-    }
-
-    private suspend fun awardMilestone(days: Int) {
-        prefs.markStreakMilestoneHit(days.toString())
-        // Notification
-        runCatching {
-            NotificationHelper.showStreakMilestone(ServiceLocator.appContext(), days)
-        }.onFailure { Log.e(LogTags.STREAK, "Milestone notification failed", it) }
-
-        // Achievements — only the 3-day and 30-day have achievements.
-        val achievementId = when (days) {
-            3 -> AchievementCatalog.STREAK_3
-            30 -> AchievementCatalog.STREAK_30
-            else -> null
-        }
-        if (achievementId != null) {
-            val existing = rewardRepo.getAchievementsForUser(uid)
-                .firstOrNull { it.achievementId == achievementId }
-            if (existing == null || !existing.isUnlocked) {
-                rewardRepo.upsertAchievement(
-                    uid,
-                    UserAchievement(
-                        achievementId = achievementId,
-                        userId = uid,
-                        progress = days,
-                        isUnlocked = true,
-                        isClaimed = false,
-                        unlockedAt = java.time.LocalDateTime.now(),
-                        claimedAt = null
-                    )
-                )
-                Log.i(LogTags.STREAK, "Achievement unlocked: $achievementId at $days days")
-            }
-        }
-    }
-
-    /**
-     * Phase 6B: fetches the server-side weekly insights once per ViewModel
-     * lifetime. Server failure → EMPTY → the card silently hides. The
-     * dashboard's own Room-backed cards still render, so no functional
-     * regression when offline.
-     */
-    private fun loadWeeklyInsights() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(insightsLoading = true) }
-            val insights = ServiceLocator.insightsRepository.fetchWeeklyInsights(days = 7)
-            _uiState.update {
-                it.copy(
-                    insights = if (insights === com.example.fithub.domain.model.WeeklyInsights.EMPTY) null else insights,
-                    insightsLoading = false,
-                )
-            }
         }
     }
 }
