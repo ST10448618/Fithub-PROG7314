@@ -10,8 +10,7 @@ object WeightLocalMapper {
         weightKg = e.weightKg,
         date = e.date,
         note = e.note,
-        createdAt = e.createdAt,
-        photoUrl = e.photoUrl
+        createdAt = e.createdAt
     )
 
     fun toEntity(d: WeightEntry) = WeightEntryEntity(
@@ -20,7 +19,6 @@ object WeightLocalMapper {
         weightKg = d.weightKg,
         date = d.date,
         note = d.note,
-        createdAt = d.createdAt,
-        photoUrl = d.photoUrl
+        createdAt = d.createdAt
     )
 }

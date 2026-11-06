@@ -10,8 +10,7 @@ object WeightMapper {
         "weightKg" to w.weightKg,
         "date" to w.date.toString(),
         "note" to w.note,
-        "createdAt" to w.createdAt.toString(),
-        "photoUrl" to w.photoUrl
+        "createdAt" to w.createdAt.toString()
     )
 
     fun fromMap(id: String, userId: String, map: Map<String, Any?>): WeightEntry =
@@ -25,7 +24,6 @@ object WeightMapper {
             note = map["note"] as? String,
             createdAt = (map["createdAt"] as? String)?.let {
                 runCatching { LocalDateTime.parse(it) }.getOrNull()
-            } ?: LocalDateTime.now(),
-            photoUrl = map["photoUrl"] as? String
+            } ?: LocalDateTime.now()
         )
 }

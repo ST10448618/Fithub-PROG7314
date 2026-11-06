@@ -11,10 +11,4 @@ interface WeightRepository {
     suspend fun addEntry(entry: WeightEntry): Resource<Unit>
     suspend fun deleteEntry(entryId: String): Resource<Unit>
     suspend fun syncFromRemote(uid: String): Resource<Unit>
-
-    /**
-     * Phase 6 (UDF 4): store the Firebase Storage download URL for the photo
-     * attached to [entryId]. If [photoUrl] is null, the column is cleared.
-     */
-    suspend fun updatePhotoUrl(entryId: String, photoUrl: String?): Resource<Unit>
 }
