@@ -44,7 +44,6 @@ fun NutritionGoalsScreen(
             .background(BackgroundGray)
     ) {
         AppHeader(title = stringResource(R.string.nutrition_goals_title), onBack = onBack)
-        AppHeader(title = "Nutrition Goals", onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -63,7 +62,6 @@ fun NutritionGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.nutrition_goals_your_details),
-                    "Your Details",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold,
@@ -84,11 +82,6 @@ fun NutritionGoalsScreen(
                         stringResource(R.string.nutrition_goals_kg_format, it.toInt())
                     } ?: stringResource(R.string.common_dash)
                 )
-                DetailLine("Age :", state.age.toString())
-                DetailLine("Current Weight :", "${state.currentWeightKg.toInt()} kg",
-                    inline2 = "Height :", value2 = "${state.heightCm.toInt()} cm")
-                DetailLine("Lifestyle :", state.activityLabel)
-                DetailLine("Target Weight :", state.targetWeightKg?.let { "${it.toInt()} kg" } ?: "—")
             }
 
             Spacer(Modifier.height(16.dp))
@@ -96,7 +89,6 @@ fun NutritionGoalsScreen(
             // ---- Nutrition Management ----
             Text(
                 stringResource(R.string.nutrition_goals_management_title),
-                "Nutrition Management",
                 style = MaterialTheme.typography.titleLarge,
                 color = FitHubPrimary,
                 fontWeight = FontWeight.Bold,
@@ -125,7 +117,6 @@ fun NutritionGoalsScreen(
                     Column {
                         Text(
                             stringResource(R.string.nutrition_goals_recommendation_engine),
-                            "Based on the Mifflin-St Jeor equation",
                             style = MaterialTheme.typography.labelMedium,
                             color = ErrorRed,
                             fontWeight = FontWeight.Bold
@@ -135,7 +126,6 @@ fun NutritionGoalsScreen(
                                 R.string.nutrition_goals_recommendation_value,
                                 state.recommendedDailyCalories
                             ),
-                            "We would recommend ${state.recommendedDailyCalories} kcal per day",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )
@@ -149,7 +139,6 @@ fun NutritionGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.nutrition_goals_daily_calorie_goal),
-                    "Daily Calorie Intake Goal",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold,
@@ -163,7 +152,6 @@ fun NutritionGoalsScreen(
                     step = 50,
                     range = 1000..6000,
                     suffix = " " + stringResource(R.string.nutrition_goals_kcal_suffix)
-                    suffix = " kcal"
                 )
 
                 Spacer(Modifier.height(10.dp))
@@ -174,7 +162,6 @@ fun NutritionGoalsScreen(
                             R.string.nutrition_goals_recommended_value,
                             state.recommendedDailyCalories
                         ),
-                        "Recommended : ${state.recommendedDailyCalories} kcal",
                         style = MaterialTheme.typography.labelMedium,
                         color = TextSecondary,
                         modifier = Modifier.weight(1f)
@@ -184,7 +171,6 @@ fun NutritionGoalsScreen(
                             R.string.nutrition_goals_current_value,
                             state.userDailyCalories
                         ),
-                        "Current : ${state.userDailyCalories} kcal",
                         style = MaterialTheme.typography.labelMedium,
                         color = FitHubPrimary,
                         fontWeight = FontWeight.Bold
@@ -195,7 +181,6 @@ fun NutritionGoalsScreen(
 
                 SmallActionButton(
                     text = stringResource(R.string.nutrition_goals_use_recommendation),
-                    text = "Use Recommendation",
                     onClick = viewModel::acceptRecommendation
                 )
             }
@@ -206,14 +191,12 @@ fun NutritionGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.nutrition_goals_meal_targets_title),
-                    "Meal Targets",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     stringResource(R.string.nutrition_goals_meal_targets_subtitle),
-                    "Divide your daily calories across meals",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -223,7 +206,6 @@ fun NutritionGoalsScreen(
                     emoji = "🍳",
                     label = stringResource(R.string.enum_meal_breakfast),
                     color = MealBreakfast,
-                    emoji = "🍳", label = "Breakfast", color = MealBreakfast,
                     value = state.breakfastKcal,
                     onChange = { viewModel.setMealCalories(MealType.BREAKFAST, it) }
                 )
@@ -231,7 +213,6 @@ fun NutritionGoalsScreen(
                     emoji = "🥗",
                     label = stringResource(R.string.enum_meal_lunch),
                     color = MealLunch,
-                    emoji = "🥗", label = "Lunch", color = MealLunch,
                     value = state.lunchKcal,
                     onChange = { viewModel.setMealCalories(MealType.LUNCH, it) }
                 )
@@ -239,7 +220,6 @@ fun NutritionGoalsScreen(
                     emoji = "🍽",
                     label = stringResource(R.string.enum_meal_dinner),
                     color = MealDinner,
-                    emoji = "🍽", label = "Dinner", color = MealDinner,
                     value = state.dinnerKcal,
                     onChange = { viewModel.setMealCalories(MealType.DINNER, it) }
                 )
@@ -247,7 +227,6 @@ fun NutritionGoalsScreen(
                     emoji = "🍓",
                     label = stringResource(R.string.enum_meal_snack),
                     color = MealSnack,
-                    emoji = "🍓", label = "Snack", color = MealSnack,
                     value = state.snackKcal,
                     onChange = { viewModel.setMealCalories(MealType.SNACK, it) }
                 )
@@ -259,7 +238,6 @@ fun NutritionGoalsScreen(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         stringResource(R.string.nutrition_goals_total_label),
-                        "TOTAL : ",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -269,7 +247,6 @@ fun NutritionGoalsScreen(
                             state.mealAllocated,
                             state.userDailyCalories
                         ),
-                        "${state.mealAllocated} kcal / ${state.userDailyCalories} kcal",
                         style = MaterialTheme.typography.titleSmall,
                         color = if (state.mealValid) SuccessGreen else ErrorRed,
                         fontWeight = FontWeight.Bold
@@ -280,7 +257,6 @@ fun NutritionGoalsScreen(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         stringResource(R.string.nutrition_goals_meal_invalid_hint),
-                        "Adjust meal targets to match your daily calories.",
                         style = MaterialTheme.typography.labelSmall,
                         color = ErrorRed
                     )
@@ -293,14 +269,12 @@ fun NutritionGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.nutrition_goals_macro_targets_title),
-                    "Macro Targets",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     stringResource(R.string.nutrition_goals_macro_targets_subtitle),
-                    "Set your daily nutrient targets",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -309,21 +283,18 @@ fun NutritionGoalsScreen(
                 MacroSliderRow(
                     label = stringResource(R.string.food_details_macro_protein),
                     color = MacroProtein,
-                    label = "Protein", color = MacroProtein,
                     value = state.proteinG, range = 0..400,
                     onChange = viewModel::setProtein
                 )
                 MacroSliderRow(
                     label = stringResource(R.string.food_details_macro_carbs),
                     color = MacroCarbs,
-                    label = "Carbs", color = MacroCarbs,
                     value = state.carbsG, range = 0..700,
                     onChange = viewModel::setCarbs
                 )
                 MacroSliderRow(
                     label = stringResource(R.string.food_details_macro_fats),
                     color = MacroFats,
-                    label = "Fats", color = MacroFats,
                     value = state.fatG, range = 0..250,
                     onChange = viewModel::setFat
                 )
@@ -331,7 +302,6 @@ fun NutritionGoalsScreen(
                 Spacer(Modifier.height(8.dp))
                 SmallActionButton(
                     text = stringResource(R.string.nutrition_goals_reset_macros),
-                    text = "Reset to starter split",
                     onClick = viewModel::recalcMacrosFromCalories
                 )
             }
@@ -346,14 +316,12 @@ fun NutritionGoalsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SecondaryButton(
                     text = stringResource(R.string.generic_cancel),
-                    text = "Cancel",
                     onClick = onBack,
                     modifier = Modifier.weight(1f)
                 )
                 PrimaryButton(
                     text = if (state.isSaving) stringResource(R.string.nutrition_goals_saving)
                     else stringResource(R.string.nutrition_goals_confirm),
-                    text = if (state.isSaving) "Saving..." else "Confirm Goals",
                     onClick = viewModel::save,
                     enabled = !state.isSaving && state.mealValid,
                     modifier = Modifier.weight(1.3f)
@@ -456,7 +424,6 @@ private fun MealTargetRow(
         ) { Text("−") }
         Text(
             stringResource(R.string.nutrition_goals_kcal_format, value),
-            "$value kcal",
             style = MaterialTheme.typography.titleSmall,
             color = color,
             fontWeight = FontWeight.Bold,
@@ -494,7 +461,6 @@ private fun MacroSliderRow(
             )
             Text(
                 stringResource(R.string.food_details_grams_format, value),
-                "${value} g",
                 style = MaterialTheme.typography.titleSmall,
                 color = color,
                 fontWeight = FontWeight.Bold

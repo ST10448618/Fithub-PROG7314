@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fithub.R
 import com.example.fithub.core.LogTags
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.fithub.core.ServiceLocator
 import com.example.fithub.core.SessionManager
 import com.example.fithub.domain.model.UserProfile
@@ -15,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 
 data class ProfileUiState(
     val isLoading: Boolean = true,
@@ -40,9 +37,6 @@ class ProfileViewModel : ViewModel() {
                 isLoading = false,
                 errorMessage = ServiceLocator.appContext()
                     .getString(R.string.profile_error_no_session)
-            _uiState.value = ProfileUiState(
-                isLoading = false,
-                errorMessage = "No active session. Please log in again."
             )
         } else {
             observeProfile(id)
@@ -67,15 +61,4 @@ class ProfileViewModel : ViewModel() {
             }
         }
     }
-            // Give Room a moment for the observation to emit first
-            kotlinx.coroutines.delay(300)
-            if (_uiState.value.profile == null) {
-                // Nothing local — pull from Firebase
-                val result = userRepo.syncFromRemote(uid)
-                android.util.Log.d("FitHubProfile", "syncFromRemote result: $result")
-            }
-        }
-    }
-
-
 }

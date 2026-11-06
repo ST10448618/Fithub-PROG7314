@@ -42,7 +42,6 @@ fun WorkoutGoalsScreen(
             .background(BackgroundGray)
     ) {
         AppHeader(title = stringResource(R.string.workout_goals_title), onBack = onBack)
-        AppHeader(title = "Workout Goals", onBack = onBack)
 
         if (state.isLoading) {
             LoadingState()
@@ -61,14 +60,12 @@ fun WorkoutGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.dashboard_weekly_workout_title),
-                    "Weekly Workout Goal",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     stringResource(R.string.workout_goals_weekly_subtitle),
-                    "How many days a week do you aim to train for?",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -95,14 +92,12 @@ fun WorkoutGoalsScreen(
             RoundedCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.workout_goals_monthly_title),
-                    "Monthly Activity Goal",
                     style = MaterialTheme.typography.titleMedium,
                     color = FitHubPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     stringResource(R.string.workout_goals_monthly_subtitle),
-                    "Amount of calories you aim to burn in a month.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -116,7 +111,6 @@ fun WorkoutGoalsScreen(
                     min = 500,
                     max = 100000,
                     unit = stringResource(R.string.common_unit_kcal)
-                    unit = "kcal"
                 )
             }
 
@@ -130,14 +124,12 @@ fun WorkoutGoalsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SecondaryButton(
                     text = stringResource(R.string.generic_cancel),
-                    text = "Cancel",
                     onClick = onBack,
                     modifier = Modifier.weight(1f)
                 )
                 PrimaryButton(
                     text = if (state.isSaving) stringResource(R.string.nutrition_goals_saving)
                     else stringResource(R.string.nutrition_goals_confirm),
-                    text = if (state.isSaving) "Saving..." else "Confirm Goals",
                     onClick = viewModel::save,
                     enabled = !state.isSaving,
                     modifier = Modifier.weight(1f)

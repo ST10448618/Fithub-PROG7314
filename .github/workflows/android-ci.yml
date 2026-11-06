@@ -1,13 +1,13 @@
+# AI-assisted (DeepSeek); reviewed and tested by the FitHub team.
 name: Android CI
 
 on:
   push:
     branches:
-      - master
-      - 'feature/**'
+      - '**'
   pull_request:
     branches:
-      - master
+      - '**'
   workflow_dispatch:
 
 jobs:

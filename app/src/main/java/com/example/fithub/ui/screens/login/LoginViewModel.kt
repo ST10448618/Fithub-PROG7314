@@ -1,7 +1,11 @@
 package com.example.fithub.ui.screens.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fithub.R
+import com.example.fithub.core.LogTags
+import com.example.fithub.core.PostLoginSync
 import com.example.fithub.core.Resource
 import com.example.fithub.core.ServiceLocator
 import com.example.fithub.domain.repository.AuthRepository
@@ -32,20 +36,23 @@ class LoginViewModel(
     fun onPasswordChange(v: String) =
         _uiState.update { it.copy(password = v, errorMessage = null) }
 
-    fun showBiometricUnavailable() = _uiState.update {
-        it.copy(errorMessage = "Biometric not available on this device.")
+    /** Called when biometric hardware is unavailable — error text via resources. */
+    fun showBiometricUnavailable() {
+        val msg = ServiceLocator.appContext().getString(R.string.login_biometric_unavailable)
+        _uiState.update { it.copy(errorMessage = msg) }
     }
 
-    fun showBiometricNeedsFirstLogin() = _uiState.update {
-        it.copy(errorMessage = "Please log in with your password once before using fingerprint.")
+    /** Called when no cached Firebase user exists for biometric unlock. */
+    fun showBiometricNeedsFirstLogin() {
+        val msg = ServiceLocator.appContext().getString(R.string.login_biometric_need_first_login)
+        _uiState.update { it.copy(errorMessage = msg) }
     }
 
     fun submit() {
         val state = _uiState.value
         if (state.identifier.isBlank() || state.password.isBlank()) {
-            _uiState.update {
-                it.copy(errorMessage = "Please enter your username and password.")
-            }
+            val msg = ServiceLocator.appContext().getString(R.string.login_missing_credentials)
+            _uiState.update { it.copy(errorMessage = msg) }
             return
         }
 
@@ -55,14 +62,10 @@ class LoginViewModel(
             val result = auth.login(state.identifier.trim(), state.password)
             when (result) {
                 is Resource.Success -> {
-                    // Firebase Auth now holds the session.
-                    // Pull the fresh profile from Firestore so Room is populated.
-                    ServiceLocator.userRepository.syncFromRemote(result.data)
-                    ServiceLocator.weightRepository.syncFromRemote(result.data)
-                    ServiceLocator.goalRepository.syncFromRemote(result.data)
-                    ServiceLocator.nutritionGoalsRepository.syncFromRemote(result.data)
-                    ServiceLocator.workoutGoalsRepository.syncFromRemote(result.data)
-                    ServiceLocator.checkpointRepository.syncFromRemote(result.data)
+                    PostLoginSync.run(result.data)
+
+                    runCatching { ServiceLocator.syncManager.flush(result.data) }
+                        .onFailure { Log.e(LogTags.SYNC, "Login flush threw", it) }
 
                     _uiState.update {
                         it.copy(isLoading = false, successUserId = result.data)
